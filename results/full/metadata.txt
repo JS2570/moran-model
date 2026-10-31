@@ -1,0 +1,17 @@
+Moran model simulation study
+Julia version: 1.13.1
+Random generator: Random.MersenneTwister
+Base seed: 20261027
+Cell seeds: base_seed + cell, in N-then-s loop order
+Trajectory seeds: base_seed + 100000 + 100*condition + path_number
+Population sizes: 20, 50, 100, 200
+Selection advantages: 0, 0.001, 0.005, 0.01, 0.02, 0.05, 0.1
+Initial copies for simulation study: 1
+Repetitions per cell: 20000
+Quick demonstration mode: false
+No external Julia packages are required.
+Every fixation experiment runs until loss or fixation.
+Trajectory display horizon: 30000 events; 100 events per plotted generation.
+trajectory_summary absorbed_at=-1 means unfinished at the display horizon.
+Elapsed seconds: 13.449360847473145
+Completed UTC: 2026-10-27T10:35:51.538
