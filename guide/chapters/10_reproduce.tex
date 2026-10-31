@@ -1,0 +1,609 @@
+\chapter{Run, inspect, and reproduce the project}
+\label{chap:reproduce}
+
+\section{Three things that are easy to confuse}
+
+The \textbf{source code} is the set of instructions in files ending in
+\code{.jl}. The \textbf{results} are the numbers those instructions write
+after a run. The \textbf{guide} is the document you are reading. Editing a
+sentence in the guide does not run the model. Running the model does not
+automatically turn every new result into a new PDF.
+
+We therefore use separate steps: run the Julia code, prepare the document's
+inputs, and compile the LaTeX document. This chapter explains the steps and
+then walks through the scripts that connect them.
+
+\section{Open the project folder in a terminal}
+
+A \textbf{terminal} accepts text commands for the operating system. It is
+different from the Julia prompt. The commands below belong in the terminal.
+If you see the Julia prompt \code{julia>}, leave that session first or open
+a separate terminal.
+
+Extract the supplied project archive if you are starting from the archive.
+Locate the folder named \code{moran_project}. Inside it, you should find
+folders named \code{src}, \code{scripts}, \code{test}, \code{results},
+and \code{guide}.
+
+The command \code{cd} changes the terminal's current directory. The next
+line uses a placeholder path. Replace \code{/path/to/moran_project} with
+the actual path to your extracted folder. Keep the quotation marks if the
+path contains spaces.
+
+\begin{lstlisting}[language={},numbers=none]
+cd "/path/to/moran_project"
+\end{lstlisting}
+
+To check where the terminal is looking, use these two commands:
+\begin{lstlisting}[language={},numbers=none]
+pwd
+ls
+\end{lstlisting}
+The first prints the current directory. The second lists its contents. If
+you do not see \code{scripts} and \code{src}, you are probably looking at
+the wrong folder. This is a file-location problem, not a population-genetics
+result.
+
+\section{Run the small demonstration first}
+
+Run this command from the project folder:
+\begin{lstlisting}[language={},numbers=none]
+julia --project=. scripts/demo.jl
+\end{lstlisting}
+The word \code{julia} starts Julia. The option \code{--project=.} selects
+the current directory as the Julia project environment. A single dot means
+``the current directory''. The final part names the script to execute.
+The model uses Julia standard libraries; it does not require installing a
+separate plotting package to generate its data.
+
+The demonstration first prints the probabilities for the five-individual
+example. They should be \(0.3\) for an increase, \(0.2\) for a decrease,
+and \(0.5\) for no change. It then shows a short specified sequence of
+draws, followed by a seeded repeated experiment.
+
+The specified draws are a teaching example. They are not a random sample
+used to estimate fixation probability. The repeated experiment that follows
+uses the random-number generator.
+
+\section{Read every part of the demonstration script}
+
+The following blocks are inserted directly from \code{scripts/demo.jl}.
+They are not separately maintained copies of the code. The numbers at the
+left are the line numbers in the original file.
+
+\subsection{Find the model file and load the libraries}
+
+\lstinputlisting[firstline=1,lastline=5,firstnumber=1]{code/demo.jl}
+
+Line 1 is a comment. The initial hash sign tells Julia that the rest of the
+line is an explanation for people.
+
+Line 2 loads the model file. The macro \code{@__DIR__} means the directory
+containing this script. The function \code{joinpath} joins directory and
+file names using the operating system's path convention. The component
+\code{..} means ``go to the parent directory''. Starting from the
+\code{scripts} folder, the constructed path goes up to the project folder,
+then into \code{src}, then to \code{MoranModel.jl}. The function
+\code{include} evaluates that file so its module becomes available.
+
+Line 3 makes the exported names from the local \code{MoranModel} module
+available in this script. The initial dot in \code{.MoranModel} identifies
+a module already loaded in the current context. Line 4 loads the random-number
+tools. Line 5 loads tools for formatted printing. The Julia documentation
+describes these language and standard-library features~\cite{juliadocs}.
+
+\subsection{Set the toy state and follow specified draws}
+
+\lstinputlisting[firstline=7,lastline=20,firstnumber=7]{code/demo.jl}
+
+Line 7 begins a function called \code{main}. This keeps the script's work
+inside one function. Lines 8--10 assign the population size, current A count,
+and selection advantage. Line 11 passes those three values to the model's
+transition-probability function.
+
+The returned value contains named fields. Thus \code{probabilities.up}
+selects its increase probability, \code{probabilities.down} its decrease
+probability, and \code{probabilities.stay} its no-change probability.
+Lines 12--13 print those values for a reader to inspect.
+
+The macro \code{@printf} prints values according to a format string.
+In that string, \verb|%.3f| means a decimal number with three digits after
+the decimal point. The character sequence \verb|\n| means a new line.
+Formatting affects the displayed number, not the underlying calculation.
+
+Line 15 creates an array: an ordered collection of six chosen draws. Square
+brackets enclose its entries. Line 16 uses \code{enumerate} to obtain two
+values for each entry: its position and the draw itself. The variable
+\code{event} receives the position, and \code{u} receives the draw.
+
+Line 17 recomputes the probabilities using the \emph{current} count.
+Line 18 chooses the next count and assigns it back to \code{i}. This
+assignment is what allows the count to evolve. Line 19 prints the event
+number, draw, and new count. In its format, \verb|%d| means an integer,
+while \verb|%.2f| means two digits after the decimal point. Line 20 ends
+the loop.
+
+\begin{workedexample}
+At the first hand-trace event, the count is two and the increase threshold
+is \(0.3\). The first specified draw is \(0.12\), which is smaller than
+\(0.3\), so the count increases to three. Before the next draw, line 17
+calculates new probabilities using three A individuals. The program does
+not keep using the original thresholds from the two-individual state.
+\end{workedexample}
+
+\subsection{Repeat complete runs and summarise them}
+
+\lstinputlisting[firstline=22,lastline=37,firstnumber=22]{code/demo.jl}
+
+Line 23 creates a random-number generator with a recorded seed.
+\code{MersenneTwister} is the generator's name; the integer in parentheses
+initialises it. The variable \code{rng} stores the generator. Line 24
+sets the number of independent simulation replicates to two thousand.
+Line 25 starts the fixation counter at zero.
+
+Line 26 repeats the following block once per replicate. Line 27 starts each
+run at population size one hundred, one A individual, and advantage
+\(s=0.01\). Each run continues until loss or fixation. The next replicate
+starts again from one A individual. It does not inherit the preceding
+replicate's final population.
+
+The result has a Boolean field called \code{fixed}. A \textbf{Boolean}
+is either \code{true} or \code{false}. In this addition, Julia treats
+\code{true} as one and \code{false} as zero. Therefore
+\code{fixations += outcome.fixed} adds one for a fixation and adds zero
+for a loss. The operation \code{+=} means ``add to the existing value and
+store the result back''.
+
+After the loop ends, line 30 calculates the Wilson interval. Lines 31--34
+print the fixation count, its estimated probability, its interval, and the
+exact mathematical probability. The format \verb|%.6f| uses six digits
+after the decimal point. The sequence \verb|%%| prints a literal percent
+sign within an \code{@printf} format string.
+
+Line 35 ends the definition of \code{main}. Line 37 calls it. Defining a
+function describes its instructions; calling the function carries them out.
+
+\section{Run the automated checks}
+
+After the demonstration, run:
+\begin{lstlisting}[language={},numbers=none]
+julia --project=. test/runtests.jl
+\end{lstlisting}
+The checks ask whether the code obeys known properties of the model. They
+cover valid inputs, boundary states, transition probabilities, exact fixation
+probabilities, the independent backward-equation calculation, and other
+specified behaviour. They do not prove that every real population follows
+the Moran model. They assess whether this implementation does the things
+we say it does.
+
+Read a failure message before changing anything. A failing expected-value
+check and a command that cannot locate a file are different problems. The
+former may indicate incorrect code or an incorrect test. The latter means
+the requested file was not found.
+
+\section{Choose a quick study or the full study}
+
+For a faster practice run, use:
+\begin{lstlisting}[language={},numbers=none]
+julia --project=. scripts/run_study.jl --quick
+\end{lstlisting}
+This runs one thousand replicates per parameter combination and saves data
+under \code{results/demo}. It exercises the complete data-generation
+procedure with a smaller Monte Carlo sample.
+
+For the study used in this guide, omit the flag:
+\begin{lstlisting}[language={},numbers=none]
+julia --project=. scripts/run_study.jl
+\end{lstlisting}
+The default is twenty thousand replicates per combination. The full data
+go under \code{results/full}. There is no \code{--full} flag; full mode
+is simply the default. The script recognises \code{--quick} and rejects
+unrecognised arguments rather than silently guessing what they mean.
+
+The grid contains four population sizes and seven selection advantages,
+giving \(4\times7=28\) combinations. We call one combination a
+\textbf{cell}. The full run therefore contains \(28\times20000=560000\)
+complete fixation experiments. The quick run contains
+\(28\times1000=28000\). The deterministic calculations and small set of
+display trajectories are generated in both modes.
+
+Running a mode again replaces that mode's generated data files. If you want
+to retain an experimental variant for comparison, first give the copied
+project or its copied result folder a descriptive name.
+
+\section{Read the study script: loading and writing a CSV row}
+
+\lstinputlisting[firstline=1,lastline=12,firstnumber=1]{code/run_study.jl}
+
+The loading instructions match the demonstration. This script also loads
+\code{Dates}, which provides the finishing timestamp.
+
+The helper function on lines 10--12 writes one row of values. Its argument
+\code{file} identifies the open output file. Its argument \code{values}
+contains the entries to write. The function \code{join(values, ",")}
+turns those entries into text separated by commas. The function
+\code{println(file, ...)} writes that text to the file and ends the line.
+
+The resulting format is \textbf{CSV}, meaning comma-separated values.
+Each line is a row; each comma separates columns. A spreadsheet program
+can read these files, and they can also be opened as plain text. Our rows
+contain numbers or simple labels that do not themselves contain commas.
+The helper is sufficient for these controlled outputs; it is not a general
+CSV parser for arbitrary quoted text.
+
+\section{Read the study script: the fixation grid}
+
+\lstinputlisting[firstline=15,lastline=44,firstnumber=15]{code/run_study.jl}
+
+\subsection{Open the file and label its columns}
+
+Line 15 defines a function taking three inputs: where to save results,
+how many replicates to run, and a base seed. Line 16 constructs the name
+\code{fixation.csv}. Line 17 opens that file for writing. The string
+\code{"w"} specifies write mode.
+
+The syntax \code{do file} starts a \textbf{do block}. It gives the opened
+file the local name \code{file} within the block. Julia closes the file
+when the block finishes, including when an error interrupts the block.
+Line 18 writes the header: the names of the data columns.
+
+\subsection{Visit all parameter combinations}
+
+Line 19 starts the cell counter at zero. Line 20 selects a population size
+from an array. Inside that loop, line 21 selects each advantage from a second
+array. These are \textbf{nested loops}: all seven advantages are used for
+one population size before moving to the next size.
+
+Line 22 increments the cell number. Line 23 makes its seed by adding the
+cell number to the base seed. Line 24 constructs the generator for this
+cell. This gives every cell a recorded seed without resetting the generator
+at the start of every replicate. The generator continues its sequence as
+replicates run.
+
+\subsection{Run each replicate to an absorbing state}
+
+Lines 25--26 initialise two counters. One counts fixations; the other sums
+the number of event attempts used by the complete runs. Lines 27--31 repeat
+the experiment. The initial A count in line 28 is always one.
+Line 29 adds the Boolean fixation result. Line 30 adds that run's event
+count, including unchanged attempts.
+
+There is no display horizon in this loop. It continues each replicate until
+one of the two absorbing boundaries is reached. Thus the fixation estimate
+is not contaminated by treating an unfinished display trajectory as a loss.
+
+\subsection{Summarise and save the cell}
+
+Line 32 divides fixations by replicates. Line 33 calculates the interval.
+Line 34 evaluates the exact formula, independently of the simulation count.
+Line 35 computes the usual plug-in standard-error estimate for a proportion:
+the square root of the estimated probability times one minus that estimate,
+divided by the number of replicates. This standard error describes the
+approximate Monte Carlo sampling scale. It is not another biological parameter.
+The plotted confidence interval uses the Wilson calculation instead.
+
+Lines 36--38 pass one \textbf{tuple} of results to the row writer. A tuple
+is an ordered group of values, written here in parentheses. The order must
+match the header. In order, the columns are:
+\begin{itemize}
+ \item \code{N}, \code{s}, and \code{i0}: population size, advantage,
+       and initial A count;
+ \item \code{repetitions} and \code{fixations}: replicate count and
+       observed fixation count;
+ \item \code{estimate}, \code{lower}, and \code{upper}: estimated
+       probability and Wilson interval endpoints;
+ \item \code{exact} and \code{standard_error}: the mathematical target
+       and estimated Monte Carlo standard error;
+ \item \code{events_mean} and \code{seed}: average number of event
+       attempts to either absorbing outcome, and the cell's seed.
+\end{itemize}
+The average event count includes both fixation and loss runs. It is not
+the average time conditional on successful fixation.
+
+Line 39 uses \code{flush} to send buffered output to the file during the
+study. Line 40 prints a progress update. In its format, \verb|%2d| reserves
+at least two character positions for an integer and \verb|%3d| reserves
+at least three. The widths improve alignment; they do not limit the numbers.
+The remaining \code{end} statements finish the inner loop, outer loop,
+file block, and function.
+
+\section{Read the study script: compare initial conditions}
+
+\lstinputlisting[firstline=47,lastline=59,firstnumber=47]{code/run_study.jl}
+
+This block opens \code{initial_frequency.csv} and loops over the same
+population sizes and advantages. It calculates probabilities with the exact
+formula, so there is no random sampling in this block.
+
+Line 52 uses Julia's \code{div(N, 10)} function for integer division,
+to calculate \code{N} divided by ten as an integer count. All four supplied
+population sizes are divisible by ten. Thus the result is exactly ten percent
+of the population: two, five, ten, or twenty A individuals.
+
+Line 53 calculates fixation probability from one copy. Line 54 calculates
+it from the ten-percent count. The row in line 55 records both answers,
+the ten-percent initial count and frequency, and the single-copy fixation
+probability relative to its neutral baseline.
+
+For the last comparison, the neutral single-copy probability is \(1/N\).
+Dividing the selected probability by \(1/N\) is the same as multiplying
+it by \(N\), which explains \code{N * single}. A value of two in that
+column means twice the neutral odds. It does not mean a probability of two.
+
+\section{Read the study script: check the approximation}
+
+\lstinputlisting[firstline=62,lastline=75,firstnumber=62]{code/run_study.jl}
+
+This block writes \code{approximation.csv}. Line 65 creates 121 positive
+selection values from \(10^{-5}\), which is \(0.00001\), up to \(0.5\).
+They are evenly spaced on a logarithmic scale, not evenly spaced by ordinary
+addition. That gives detail near very small advantages as well as larger ones.
+
+The function \code{log10} is the logarithm to base ten: it tells us the
+power to which ten must be raised. The function \code{range} produces
+evenly spaced exponents between the two endpoint logarithms. Its
+\code{length=121} argument specifies the number of values. The operator
+\code{.^} raises ten to \emph{each} exponent in that range. The dot
+means to apply the operation element by element; this is called
+\textbf{broadcasting}.
+
+Lines 66--67 loop over sizes and these finer selection values. Line 68
+calculates the exact single-copy answer. Line 69 calculates the
+weak-selection approximation explained earlier. The use of
+\code{-expm1(-N * s)} calculates \(1-\exp(-Ns)\) accurately near zero.
+Line 70 subtracts the exact answer from the approximation and divides by
+the exact answer. This is a \emph{signed} relative error: positive means
+the approximation is above the exact answer, and negative means it is below.
+
+The values in this block are mathematical comparisons, not estimated
+simulation frequencies. Increasing the number of replicates cannot repair
+an inaccurate approximation. The loop starts above zero; the neutral limit
+is explained separately instead of evaluating a zero-over-zero expression.
+
+\section{Read the study script: save example trajectories}
+
+\lstinputlisting[firstline=78,lastline=119,firstnumber=78]{code/run_study.jl}
+
+\subsection{Set the display experiment}
+
+Lines 79--82 choose a population of one hundred, a display horizon of thirty
+thousand event attempts, output every one hundred attempts, and eight paths
+per condition. A \textbf{path}, or trajectory, is the sequence of counts in
+one run. Line 83 starts a condition counter. Lines 84--86 open the trajectory
+summary file and label its columns.
+
+Lines 87--88 combine initial counts of one and ten with three advantages:
+zero, \(0.01\), and \(0.1\). There are six conditions in total. Line 89
+updates the condition number.
+
+\subsection{Store eight paths without selecting their outcomes}
+
+Line 90 creates an initially empty vector whose entries will themselves be
+vectors of integer counts. The notation \code{Vector{Vector{Int}}()} means
+``a vector of integer vectors''. Line 91 repeats the path-generation block
+eight times.
+
+Line 92 assigns a seed using the base seed, the condition number, and the
+path number. The expression \code{100condition} means
+\code{100 * condition}; Julia allows a numerical coefficient directly
+before a variable name. The large fixed offset keeps these path seeds
+separate from the fixation-grid seeds. Line 93 creates a generator with that
+seed and simulates the path. Line 94 appends its count vector to the
+collection. The exclamation mark in \code{push!} indicates that it changes
+the collection it receives.
+
+These are predetermined seeds and path counts. The script does not search
+for an appealing successful trajectory and discard the others.
+
+Lines 95--98 inspect when the trajectory first reached a boundary.
+The value \code{nothing} means no absorption event was recorded before
+the display horizon. The comparison \code{=== nothing} tests for that
+particular missing-value marker. For the CSV file, the code replaces it
+with \(-1\). This negative number is a label for ``not yet absorbed within
+the display'', not a negative event time and not a loss.
+
+Lines 99--100 write the condition, path number, seed, absorption indicator,
+absorption time or marker, and final count. The expression
+\code{trajectory.counts[end]} retrieves the last entry of the counts vector.
+The \code{end} inside square brackets means ``the final index'' here; it
+is not the instruction that closes a loop.
+
+\subsection{Save frequencies on a readable time grid}
+
+Line 102 calculates the deterministic comparison for the same starting
+state and horizon. Line 103 turns the selection value into text and replaces
+its decimal point with the letter \code{p}. In \code{"." => "p"}, the
+arrow specifies a replacement rule. Thus \code{0.01} becomes the filename
+label \code{0p01}.
+
+Line 104 inserts the parameter values into a filename. Inside a Julia
+string, \code{$(N)} means ``evaluate this expression and insert its text
+here''. This is \textbf{string interpolation}. For example, one generated
+name is \code{trajectory_N100_i1_s0p01.csv}.
+
+Lines 105--106 open the path file and write its header. Line 107 uses this range:
+\begin{lstlisting}[numbers=none]
+0:sample_every:max_events
+\end{lstlisting}
+Its three components mean starting
+value, step size, and final allowed value. Here it visits events zero, one
+hundred, two hundred, and so on, through thirty thousand.
+
+Line 108 creates the beginning of a numerical row. The type
+\code{Float64} requests ordinary double-precision numerical entries. The
+first entry is the event number; the second is the event number divided by
+the population size. That second number is our generation-like time unit.
+At one hundred events and \(N=100\), it equals one. No synchronous
+replacement of all individuals is implied.
+
+Lines 109--111 append each path's frequency at that event. The array index
+is \code{event + 1} because array position one contains the initial state
+at event zero. Dividing the stored count by \code{N} converts it into a
+frequency. Line 112 appends the deterministic frequency, which is already
+a frequency and must not be divided by \code{N} again. Line 113 writes
+the row. The remaining \code{end} statements close the loops, file blocks,
+and function.
+
+The stored histories extend to the display horizon. After absorption, a
+history repeats its absorbing count. That is why a path can stay exactly at
+zero or one for the rest of the displayed time.
+
+\section{Read the study script: record the run information}
+
+\lstinputlisting[firstline=122,lastline=142,firstnumber=122]{code/run_study.jl}
+
+This function writes \code{metadata.txt}, a plain-text description of the
+computation. The file records the Julia version, random-number generator,
+base seed, seed conventions, parameter grid, replicate count, and mode.
+The constant \code{VERSION} contains the running Julia version.
+
+The file also records the stopping rules. This matters because the fixation
+experiment runs until absorption, whereas displayed trajectories have a
+finite horizon. A future reader should not have to guess which rule was used.
+
+Line 139 writes the elapsed time supplied by the main function. Line 140
+writes the completion timestamp in UTC using \code{Dates.now(Dates.UTC)}.
+A timestamp identifies when the computation finished; elapsed seconds measure
+how long it took. They serve different purposes. Runtime depends on the
+computer and Julia compilation state, so it is not a biological result.
+
+\section{Read the study script: the main function}
+
+\lstinputlisting[firstline=145,lastline=168,firstnumber=145]{code/run_study.jl}
+
+Line 146 checks whether the string \code{"--quick"} is present in
+\code{ARGS}, Julia's list of command-line arguments supplied after the
+script name. Line 147 uses \code{setdiff} to identify supplied arguments
+outside the permitted list. Line 148 checks whether that unrecognised list
+is empty.
+
+The operator \code{||} means short-circuit ``or''. If the left expression
+is true, Julia does not evaluate the right expression. Thus an empty
+unrecognised-argument list allows execution to continue; otherwise
+\code{error} reports which arguments were not understood. This is an input
+check, not a statistical test.
+
+Lines 149--150 set the default replicate count and output mode. Lines
+151--154 replace them with one thousand and \code{"demo"} when quick
+mode was requested. Line 155 sets the base seed. Line 156 constructs the
+output directory relative to the script's location; \code{normpath}
+simplifies path components such as \code{..}. Line 157 uses \code{mkpath}
+to create the directory if needed.
+
+Line 158 records the clock time before the work begins. Lines 159--162 call
+the four data-generation functions in order. Line 163 subtracts the starting
+clock time from the current clock time, producing elapsed seconds. Line 164
+writes the metadata. Line 165 prints a completion message; its \verb|%s|
+placeholder prints text. Line 166 ends the function definition, and line
+168 calls the function to run the script.
+
+\section{Turn full results into the document inputs}
+
+After generating the full results, run:
+\begin{lstlisting}[language={},numbers=none]
+julia --project=. scripts/prepare_guide.jl
+\end{lstlisting}
+This preparation step reads the full-study CSV files and writes the numerical
+and figure inputs used by the LaTeX document. It does not run a new set of
+fixation simulations. This separation ensures that the written results and
+figures refer to the saved study data.
+
+The guide uses the full results, not the smaller quick demonstration. If
+you rerun only quick mode, you have practised the pipeline but have not
+replaced the full tables used in the guide. To update the guide with a
+changed full experiment, rerun full mode and this preparation step.
+
+\section{Compile or open the LaTeX guide}
+
+If Tectonic is available, run these commands from the project folder:
+\begin{lstlisting}[language={},numbers=none]
+cd guide
+tectonic --keep-logs main.tex
+\end{lstlisting}
+The first command moves into the guide folder. The argument \code{main.tex}
+identifies the main LaTeX source file. Tectonic writes \code{main.pdf} in that
+folder. The option keeps a compilation log that can help diagnose errors.
+
+You can also open the \code{guide} project folder in the Codex LaTeX
+editor and use its PDF preview. The LaTeX compilation step uses the saved
+source and prepared inputs. It does not execute Julia automatically.
+
+An online editor such as Overleaf can be used for editing LaTeX too. The
+preparation helper makes the guide folder self-contained: it copies the actual
+runnable source into \code{guide/code} and the plotting data into
+\code{guide/generated}. Upload the contents of the whole guide folder, choose
+\code{main.tex} as the main document, and use pdfLaTeX. Uploading only the main
+file would omit the chapters and supporting inputs. Edit the original Julia
+files and rerun the helper to refresh their copies before recompiling.
+
+\section{Make a small change and understand what it changes}
+
+Keep an unchanged copy of the supplied project as a reference. In a working
+copy, change one setting at a time. First make a prediction in words. Then
+run the demonstration or quick study. Finally compare the observation with
+your prediction and the exact result.
+
+For example, change only the demonstration's selection advantage from
+\(0.5\) to zero in the toy-state block. Keep \(N=5\) and \(i=2\).
+Predict that the increase and decrease probabilities will become equal.
+Their new values should be \(0.24\), while the no-change probability
+should be \(0.52\). This is a stronger learning exercise than changing
+several parameters and guessing which one caused the difference.
+
+Changing a printed label does not change a function's input. Check the
+actual arguments passed to the function. In particular, the seeded experiment
+in the demonstration passes its own numbers explicitly, so changing the
+earlier toy variables does not change that later experiment.
+
+If you add a new population size to the study, remember that the exact
+ten-percent comparison currently uses integer division by ten. Choose a
+size divisible by ten if you want to preserve that initial frequency exactly.
+Changes to the scientific question may require changes to more than one
+output label or loop; work through them deliberately.
+
+\section{Diagnose a message before drawing a conclusion}
+
+\begin{itemize}
+ \item \textbf{The terminal says Julia was not found.} The operating system
+       could not locate the Julia executable. Check the Julia installation
+       and terminal path. No simulation result has been produced.
+ \item \textbf{A script or source file cannot be opened.} Check the current
+       folder and the extracted directory layout. Keep the project folders
+       together.
+ \item \textbf{An \code{ArgumentError} describes an input.} Read that
+       description. The model requires an integer population size of at
+       least two, an integer count between zero and the size, and a finite
+       nonnegative advantage. A rejected input is not evidence about allele
+       behaviour.
+ \item \textbf{An unknown command-line argument is reported.} Use no flag
+       for full mode or \code{--quick} for the demonstration mode.
+ \item \textbf{A simulation estimate differs from the exact probability.}
+       Compare the difference with its sampling uncertainty. A small
+       discrepancy is expected. Repeated systematic discrepancies much
+       larger than that scale deserve investigation.
+ \item \textbf{A display path has absorption time \(-1\).} It had not
+       reached a boundary by the displayed horizon. It was not automatically
+       counted as a loss in the separate fixation experiment.
+\end{itemize}
+
+\begin{checkpoint}
+\textbf{Question 1.} Which command produces the twenty-thousand-replicate
+study?
+
+\textbf{Answer.} Run \code{julia --project=. scripts/run_study.jl} from
+the project folder, without \code{--quick}.
+
+\textbf{Question 2.} You edited the full-study settings, ran only quick
+mode, and recompiled the guide. Should its full-study tables have changed?
+
+\textbf{Answer.} No. Quick mode writes the demonstration results. Rerun
+the full study, run \code{scripts/prepare_guide.jl}, and then compile the
+document to update the full-study presentation.
+
+\textbf{Question 3.} A trajectory file reports event \(500\) at generation
+\(5\) for \(N=100\). What calculation produced that time?
+
+\textbf{Answer.} The script divided the event count by the population size:
+\(500/100=5\). It is a model time unit, not five synchronised replacements
+of every individual.
+\end{checkpoint}

@@ -1,0 +1,269 @@
+\chapter{The probability ideas we need}
+\label{chap:probability}
+
+\section{Probability describes a chance}
+
+A \textbf{probability} is a number between zero and one. Zero means that an
+outcome is impossible under the stated rules. One means that it is certain.
+A probability of \(0.25\) is the same as one quarter or twenty-five percent.
+
+An \textbf{event}, in probability language, is a specified outcome or set of
+outcomes. For example, ``the selected individual is A'' is an event. The
+word event will also refer to one reproduction and replacement attempt in
+the Moran model. The surrounding sentence will tell us which meaning is used.
+
+We write \(\Pr(A)\) for the probability of a probability event called
+\(A\). Here \(A\) is a temporary name for an event, not necessarily the
+genetic type A. For a concrete example, we can avoid a letter and write
+\(\Pr(\text{selected individual is A})\).
+
+Probabilities concern the rules and information available before a draw.
+Once a particular draw has happened, its outcome is known. The fact that an
+unlikely outcome occurred does not mean its original probability was wrong.
+
+\section{Fractions and equal chances}
+
+Suppose a population contains five individuals. Two are A and three are B.
+If each individual is equally likely to be selected, there are five equally
+likely possibilities. Two of them meet the description ``selected individual
+is A''. Therefore
+\[
+  \Pr(\text{selected individual is A})=\frac{2}{5}=0.4.
+\]
+
+The rule ``favourable possibilities divided by all possibilities'' works here
+because the individual possibilities have equal chances. We must not use it
+without checking that condition. Later, choosing a parent will involve
+unequal reproductive weights. Choosing an individual for replacement will
+still give equal chances to all individuals.
+
+\begin{workedexample}
+Think of five equally sized tickets in a bag. Two tickets say A and three
+say B. Drawing one ticket uniformly means that each ticket has probability
+\(1/5\). The total probability of drawing A is
+\(1/5+1/5=2/5\). We add the probabilities because the two A tickets are
+different possible outcomes of the same draw.
+\end{workedexample}
+
+\section{Opposite events and the total probability}
+
+If there are only A and B individuals, a selected individual must be one
+or the other. It cannot be neither. It also cannot be both in our haploid
+model. Their probabilities therefore add to one:
+\[
+ \Pr(\text{A selected})+\Pr(\text{B selected})=1.
+\]
+If the first probability is \(0.4\), the second must be \(1-0.4=0.6\).
+
+The event ``not A'' is called the \textbf{complement} of ``A''. In general,
+the probability of a complement is one minus the probability of the original
+event. We will use this fact when calculating the chance that the allele
+count stays unchanged.
+
+\section{Conditional probability: state what is already known}
+
+The phrase \textbf{conditional probability} means a probability calculated
+given some specified information. A vertical bar is read as ``given''.
+For example,
+\[
+ \Pr(\text{A selected}\mid i=2,N=5)
+\]
+means ``the probability that A is selected, given that there are two A
+individuals in a population of five''. The symbols \(i\) and \(N\) have
+the meanings introduced in Chapter~\ref{chap:foundations}.
+
+The information matters. If there were no A individuals, the chance would
+be zero. If all five individuals were A, the chance would be one.
+
+For a more abstract statement, let \(A\) and \(B\) name two probability
+events. The expression \(\Pr(B\mid A)\) is the probability that \(B\)
+occurs when we know that \(A\) has occurred. If \(\Pr(A)>0\), its definition is
+\[
+  \Pr(B\mid A)=\frac{\Pr(A\text{ and }B)}{\Pr(A)}.
+\]
+The numerator is the probability that both events occur. Dividing by
+\(\Pr(A)\) restricts our attention to occasions on which \(A\) occurred.
+
+We will not need to manipulate this definition repeatedly. The important
+habit is to ask: \emph{what information is this probability conditioned on?}
+
+\section{Why we multiply probabilities}
+
+Rearranging the definition above gives the general multiplication rule:
+\[
+ \Pr(A\text{ and }B)=\Pr(A)\Pr(B\mid A).
+\]
+The expression on the right means the chance of the first event, multiplied
+by the chance of the second event given the first.
+
+Two events are \textbf{independent} when knowing that the first occurred does
+not change the probability of the second. In that case
+\(\Pr(B\mid A)=\Pr(B)\), so the multiplication rule becomes
+\[
+ \Pr(A\text{ and }B)=\Pr(A)\Pr(B).
+\]
+
+\begin{workedexample}
+Suppose the chance of choosing an A parent is \(0.5\). Suppose an independent
+replacement draw has probability \(0.6\) of selecting a B individual.
+The chance of choosing an A parent \emph{and} replacing a B individual is
+\[
+  0.5\times 0.6=0.3.
+\]
+As an intuitive count, imagine one hundred repetitions. About fifty choose
+an A parent. Of those fifty, about sixty percent, or thirty, replace B.
+Thirty out of one hundred is \(0.3\). These are expected counts, not
+promises about a particular batch of one hundred repetitions.
+\end{workedexample}
+
+In our model, the parent and replacement draws are independent
+\emph{given the current population state}. They both use the same current
+counts. We do not remove the parent before choosing a replacement. We also
+do not rule out selecting the same individual twice.
+
+This conditional statement is precise. If we mixed observations from many
+different population states without recording those states, the apparent
+relationship between the draws could be different.
+
+\section{Why we add probabilities}
+
+Events are \textbf{mutually exclusive} when they cannot both happen in the
+same trial. The outcomes ``the A count goes up'', ``the A count goes down'',
+and ``the A count stays the same'' are mutually exclusive.
+
+When events are mutually exclusive, we find the probability that one or
+another occurs by adding their probabilities. For example, suppose an event
+has probability \(0.3\) of increasing the count and probability \(0.2\)
+of decreasing it. Then
+\[
+ \Pr(\text{count changes})=0.3+0.2=0.5.
+\]
+The remaining probability is \(1-0.5=0.5\), so the count stays unchanged
+with probability \(0.5\).
+
+Do not add probabilities in this simple way when the events overlap. If
+the same possible outcome belongs to both events, adding would count it
+twice. The three count outcomes above do not overlap.
+
+\section{A random variable is a numerical outcome}
+
+A \textbf{random variable} is a numerical quantity determined by a random
+outcome. Let \(Y\) denote the change in the A count during one event. The
+possible values of \(Y\) are
+\[
+  Y=1,\qquad Y=-1,\qquad\text{or}\qquad Y=0.
+\]
+The value \(1\) means one more A individual. The value \(-1\) means one
+fewer A individual. The value \(0\) means no change.
+
+The symbol names the quantity before we know which value the random event
+will produce. A realised value is the actual value produced in one trial.
+
+\section{Expected value: a probability-weighted average}
+
+The \textbf{expected value} of a random variable is its average when each
+possible value is weighted by its probability. We write \(\mathbb{E}[Y]\)
+for the expected value of \(Y\). The stylised letter \(\mathbb{E}\) is
+read as ``expectation''.
+
+Suppose \(Y\) equals \(1\) with probability \(0.3\), equals \(-1\) with
+probability \(0.2\), and equals \(0\) with probability \(0.5\). Multiply
+each value by its probability and add:
+\begin{align*}
+ \mathbb{E}[Y]
+ &=1(0.3)+(-1)(0.2)+0(0.5)\\
+ &=0.3-0.2+0\\
+ &=0.1.
+\end{align*}
+
+The expected change is one tenth of an individual per event. An actual
+event cannot add one tenth of an individual. It adds one, removes one, or
+changes nothing. An average does not have to be a possible individual outcome.
+
+For intuition, imagine ten events that each begin from the \emph{same}
+population state. On average across many such batches, three events increase
+the count and two decrease it. The average total change is one, so the
+average change per event is \(1/10=0.1\).
+
+This thought experiment resets the starting state before each event. In a
+single evolving population, a changed count changes the probabilities of
+later events. We cannot assume that ten successive events in one trajectory
+all use the original probabilities.
+
+\subsection{Expected change in frequency}
+
+The frequency is the count divided by the fixed population size \(N\).
+Let \(\Delta x\) mean the change in frequency during one event. The Greek
+capital letter \(\Delta\) is read as ``change in''. Since the count change
+is \(Y\), the frequency change is \(\Delta x=Y/N\).
+
+For the example above with \(N=5\), the three possible frequency changes
+are \(1/5\), \(-1/5\), and zero. Their expected value is
+\[
+ \mathbb{E}[\Delta x]=\frac{0.1}{5}=0.02.
+\]
+Again, a positive average does not rule out a decrease in the next event.
+
+\section{From probability to repeated computer experiments}
+
+Suppose we repeat a complete simulation many times, always starting with
+the same parameters and initial count. One complete run is a
+\textbf{replicate}. Each replicate ends with A either lost or fixed.
+
+Let \(R\) denote the number of replicates. Let \(K\) denote the number of
+those replicates in which A fixes. A natural estimate of the fixation
+probability is
+\[
+ \widehat p=\frac{K}{R}.
+\]
+The symbol \(\widehat p\), read as ``p hat'', means an estimated probability.
+The hat reminds us that this number is computed from a finite sample of
+random outcomes. We use the letter \(p\), without a hat, for the underlying
+probability specified by the model.
+
+If twelve out of one hundred runs fix, then \(\widehat p=12/100=0.12\).
+Another batch might give nine or fourteen fixations. The rules can stay the
+same while the observed count differs.
+
+Larger numbers of replicates usually give more precise estimates. They do
+not change the underlying model probability. A later chapter will put a
+confidence interval around the estimate and explain what that interval means.
+
+A \textbf{random seed} is an initial setting for the computer's random-number
+generator. Recording a seed helps reproduce a particular computation. It
+does not turn one random outcome into a universal result.
+
+\begin{checkpoint}
+\textbf{Question 1.} A parent draw selects A with probability \(0.4\).
+An independent replacement draw selects B with probability \(0.6\).
+What is the probability of both outcomes?
+
+\textbf{Answer.} Multiply the probabilities:
+\(0.4\times0.6=0.24\). We multiply because both outcomes are required,
+and the two draws are independent given this state.
+
+\textbf{Question 2.} The count increases with probability \(0.24\) and
+decreases with probability \(0.24\). What is the probability of no change?
+What is the expected count change?
+
+\textbf{Answer.} The probability of a change is \(0.24+0.24=0.48\).
+The probability of no change is \(1-0.48=0.52\). The expected change is
+\(1(0.24)+(-1)(0.24)+0(0.52)=0\). An expected change of zero does not
+mean that every event leaves the count unchanged.
+
+\textbf{Question 3.} A set of \(R=200\) complete runs contains \(K=30\)
+fixations. What probability do we estimate?
+
+\textbf{Answer.} The estimate is
+\(\widehat p=K/R=30/200=0.15\). Fifteen percent of this particular batch
+fixed. The true model probability need not be exactly \(0.15\).
+\end{checkpoint}
+
+\section{The three questions to ask before a calculation}
+
+Before multiplying, ask whether you need \emph{both} events and whether the
+second probability is conditional on the first. Before adding, ask whether
+the alternatives overlap. Before interpreting an average, ask whether it is
+a statement about many repetitions or about one actual trajectory.
+
+Those checks will carry most of the probability reasoning in this project.

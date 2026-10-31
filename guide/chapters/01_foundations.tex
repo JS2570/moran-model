@@ -1,0 +1,248 @@
+\chapter{The question, the biology, and the symbols}
+\label{chap:foundations}
+
+\section{What are we trying to understand?}
+
+Imagine a small population. Most individuals carry one genetic type. A few
+individuals carry another type. The second type gives its carriers a
+reproductive advantage. Does that advantage guarantee that the second type
+will spread through the whole population?
+
+No. An advantage changes the chances of reproduction. It does not determine
+the outcome of each reproduction event. A rare type can disappear before its
+advantage has much opportunity to act.
+
+Our question is therefore precise: \emph{what is the probability that an
+initially rare, advantageous type eventually occupies the whole population?}
+We will answer this question in two ways. First, we will repeat a random
+computer experiment. Second, we will calculate an exact mathematical answer
+for the model. Comparing the two answers will help us check our code.
+
+The model is deliberately small. Its purpose is to make the reasoning visible.
+It is not a claim that every biological population follows these rules.
+
+\section{The biological words, one at a time}
+
+\subsection{Population, individual, and genetic type}
+
+A \textbf{population} is the collection of individuals included in our model.
+An \textbf{individual} is one member of that collection. We follow one genetic
+difference. An \textbf{allele} is a version of a genetic locus, meaning a
+particular location or inherited genetic feature under consideration.
+
+We call the two versions type A and type B. These letters are labels. We do
+not need to name a real gene. Type A is the \emph{focal} type: it is the type
+whose fate we follow. Type B is the \emph{resident} type: it is the alternative
+already present in the population.
+
+We use a \textbf{haploid} model. Each individual carries one copy of the locus
+we follow, so each individual is either A or B. We do not have an AB genotype
+in this model. We do not model diploid inheritance, dominance, or mating.
+This is a modelling choice, not a description of all organisms.
+
+Sometimes we call A the \emph{mutant} type. Here that word describes the type
+whose initial arrival we imagine. It does not mean new mutations continue to
+appear during a run. After setting the initial state, we allow no further
+mutation.
+
+\subsection{Loss and fixation}
+
+Type A is \textbf{lost} when no A individuals remain. It has reached
+\textbf{fixation} when every individual is A.
+
+These outcomes concern this modelled population and this locus. Fixation
+does not mean that all organisms everywhere carry A. Loss of A does not mean
+that the whole population has died. The population still exists; it now
+contains only B individuals.
+
+Because we allow no new mutation, A cannot return after it has been lost.
+Likewise, B cannot return after A has fixed. These are \textbf{absorbing
+states}: once the process enters one, it stays there.
+
+\subsection{Selection and drift}
+
+\textbf{Selection} means that the genetic types differ in their expected
+reproductive success. In this project, A can have a greater chance of being
+chosen as a parent than B.
+
+\textbf{Genetic drift} is random change in genetic composition caused by
+finite random sampling. Even if the two types have equal reproductive
+weights, the number of A individuals can move up or down by chance.
+
+Selection and drift operate in the same run. We do not turn randomness off
+when we give A an advantage. Instead, we change the probabilities used by
+the random experiment.
+
+\begin{workedexample}
+Suppose there are five individuals, and only one is A. A has a reproductive
+advantage. Nevertheless, a B individual might be selected as the next parent,
+and the one A individual might be selected for replacement. If that happens,
+the population becomes all B. The advantage did not disappear. The A lineage
+disappeared before reproducing successfully.
+\end{workedexample}
+
+\section{Describe the population with a few symbols}
+
+Mathematical symbols save us from writing long sentences repeatedly. Every
+symbol below has a concrete meaning. A symbol is not a new biological object.
+
+\subsection{The population size}
+
+The capital letter \(N\) means the total number of individuals. We assume
+\(N\geq 2\). The sign \(\geq\) means ``greater than or equal to''. Thus our
+population contains at least two individuals.
+
+We keep \(N\) fixed during a simulation. For example, \(N=5\) means the
+population always contains five individuals.
+
+\subsection{The number of A individuals}
+
+The lowercase letter \(i\) means the current number of A individuals. It can
+take the whole-number values
+\[
+  i=0,1,2,\ldots,N.
+\]
+The dots mean that we continue the same counting pattern. The number of B
+individuals is \(N-i\): the total minus the number that are A.
+
+For \(N=5\) and \(i=2\), there are two A individuals and three B individuals.
+For \(i=0\), A has been lost. For \(i=N\), A has fixed.
+
+The complete state of this model is the count \(i\). We do not need the
+positions, ages, names, or family histories of the individuals. Our rules
+will depend on the current count and the fixed parameters only.
+
+\subsection{The frequency of A}
+
+The letter \(x\) means the fraction of the population that is A. This is
+called the \textbf{allele frequency}. We calculate it by dividing the A count
+by the population size:
+\[
+  x=\frac{i}{N}.
+\]
+The fraction bar means division. A frequency of \(0\) means no individuals
+are A. A frequency of \(1\) means all individuals are A.
+
+For example, two A individuals in a population of five give
+\[
+  x=\frac{2}{5}=0.4=40\%.
+\]
+The count and frequency describe the same population in different units.
+The count is two individuals. The frequency is forty percent.
+
+\subsection{Reproductive weight and selective advantage}
+
+We give each B individual a reproductive weight of \(1\). The letter \(s\)
+means the relative reproductive advantage assigned to A. In our main study,
+\(s\geq 0\). Each A individual has reproductive weight \(1+s\).
+
+We also use the letter \(r\) for that same A weight:
+\[
+  r=1+s.
+\]
+The two symbols are useful for different purposes. The symbol \(s\) makes
+the size of the advantage easy to describe. The symbol \(r\) makes some
+algebra shorter.
+
+\begin{workedexample}
+If \(s=0.5\), then \(r=1+0.5=1.5\). One A individual has one and a half
+times the reproductive weight of one B individual. We can also say that its
+weight is fifty percent larger.
+
+This does \emph{not} mean that A has a fifty percent probability of fixation.
+It does not even mean that the next parent has a fifty percent chance of
+being A. The chance of choosing an A parent also depends on how many A and
+B individuals are present.
+\end{workedexample}
+
+When \(s=0\), we have \(r=1\). Both types have equal reproductive weight.
+We call this the \textbf{neutral} case. Genetic drift still occurs.
+
+\section{Parameters and the changing state}
+
+A \textbf{parameter} is a setting chosen for a run. Here \(N\) and \(s\)
+are parameters. Once the run starts, their values stay fixed. The value
+\(r=1+s\) is fixed too.
+
+The \textbf{state} is the current count \(i\). That count changes as the run
+proceeds. The frequency \(x=i/N\) changes with it.
+
+We must also choose an initial count. For the main experiment, we start with
+one A individual. This is a choice about the starting state, not a claim
+that one A individual remains throughout the run.
+
+\begin{center}
+\begin{tabular}{lll}
+\hline
+Symbol & Meaning & Example \\
+\hline
+\(N\) & Total number of individuals & \(5\) \\
+\(i\) & Current number of A individuals & \(2\) \\
+\(N-i\) & Current number of B individuals & \(3\) \\
+\(x\) & Current A frequency, \(i/N\) & \(0.4\) \\
+\(s\) & Relative reproductive advantage & \(0.5\) \\
+\(r\) & A reproductive weight, \(1+s\) & \(1.5\) \\
+\hline
+\end{tabular}
+\end{center}
+
+\section{The assumptions we agree to use}
+
+Our population is \textbf{well mixed}. Every individual can be selected for
+replacement. We do not assign individuals to different locations or groups.
+There is no migration into or out of the population.
+
+At each model event, one parent produces one offspring. That offspring has
+the same type as its parent. One individual is selected for replacement,
+and the offspring takes that individual's place. There is no net change in
+population size. The selected individual can be the parent itself. We will
+explain why that is allowed when we derive the event probabilities.
+
+The reproductive weights are constant. A does not become more or less
+advantageous as the environment changes, because this model has no changing
+environment. Its advantage also does not depend on its frequency.
+
+These assumptions allow an exact answer. They also limit what the answer
+can tell us about a real population. A careful report states both points.
+
+\section{What one event means for time}
+
+One \textbf{event} is one attempt at reproduction and replacement. Some events
+increase the A count. Some decrease it. Some leave it unchanged.
+
+We count unchanged events too. They are still reproduction and replacement
+attempts. Omitting them would change the meaning of elapsed time.
+
+For plotting, we may divide the number of events by \(N\). We call this time
+in \emph{generations}. It is a conventional time unit: one generation means
+\(N\) event attempts. It does not mean that each individual reproduced
+exactly once, or that all individuals were replaced simultaneously.
+
+\begin{checkpoint}
+\textbf{Questions.} A run has \(N=10\), starts with \(i=3\), and uses
+\(s=0.2\). How many B individuals are present? What is the A frequency? What
+is the A reproductive weight? What do the two absorbing states mean? If
+twenty events have occurred, how many model generations have passed?
+
+\textbf{Worked answers.} There are \(N-i=10-3=7\) B individuals. The A
+frequency is \(x=i/N=3/10=0.3\), or thirty percent. The A weight is
+\(r=1+s=1+0.2=1.2\). At \(i=0\), A is lost and all ten individuals are B.
+At \(i=10\), A is fixed and all ten are A. Twenty events divided by ten
+individuals gives two model generations.
+\end{checkpoint}
+
+\section{How to use this guide}
+
+Read one worked example before moving to its general equation. Write down
+the numbers yourself. When a new symbol appears, say its meaning aloud.
+For example, read \(i/N\) as ``the number of A individuals divided by the
+total number of individuals''.
+
+When we reach the code, distinguish three questions: what biological event
+does this instruction represent, what mathematical quantity does it compute,
+and what does Julia do when it executes the instruction? Understanding all
+three connections is more useful than memorising the code.
+
+You do not need to understand every later chapter immediately. At this point,
+the essential idea is simple: we will follow a count, change it using explicit
+random rules, and ask which boundary it eventually reaches.

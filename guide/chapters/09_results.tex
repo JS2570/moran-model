@@ -1,0 +1,120 @@
+\chapter{Read the results, one figure at a time}
+\label{chap:results}
+\input{generated/summary}
+
+\section{What was actually run?}
+The full study used four population sizes: \(20,50,100,200\). For each size, it used seven selective advantages: \(0,0.001,0.005,0.01,0.02,0.05,0.1\). Four multiplied by seven gives 28 conditions. Each condition started with one focal individual and was repeated 20,000 times. That gives \StudyRepetitions{} completed fixation-or-loss experiments.
+
+Each experiment followed the same model rules but used fresh pseudorandom draws. It continued until the focal allele was either lost or fixed. We did not stop it early and classify an unfinished experiment as a loss. Separate files store a small number of histories for drawing. Those displayed histories have a fixed time horizon; they are not the experiment used to estimate fixation probability.
+
+The exact probability and the independent recurrence check were calculated without sampling. The approximation comparison is also analytical: it compares two mathematical expressions, not two sets of random experiments. Keeping these three kinds of output separate makes the study easier to interpret.
+
+\section{Figure 1: how can a growing deterministic curve coexist with loss?}
+Figure~\ref{fig:trajectories} shows eight preselected histories in grey for each condition. The seeds were set before looking at the outcomes. The dashed teal curve is the deterministic comparison. It is not a ninth random history and is not generally the exact ensemble average.
+
+Begin with the upper-left panel. The allele starts in one of 100 individuals, so its frequency begins at \(0.01\). There is no selection. The deterministic comparison stays at \(0.01\) because its expected change is zero. The grey paths can still move: zero expected change does not mean zero random variation. Most single-copy neutral alleles are lost.
+
+Next compare the left and right columns. Ten initial copies mean a frequency of \(0.1\), not a stronger selective advantage. There are more initial copies to lose. These are different starting conditions, so their outcomes need not resemble each other.
+
+Finally compare rows. A positive \(s\) makes the deterministic curve increase. A stochastic history can nevertheless hit zero. Once it reaches zero, the mutation-free model has no mechanism to restore the allele. A later expected advantage cannot reproduce an allele that is absent.
+
+\begin{figure}[p]
+\centering
+\input{images/fig_trajectories}
+\caption{Eight preselected stochastic histories per panel (grey) and a deterministic mean-field comparison (teal dashed). Every panel has \(N=100\). Rows change selective advantage; columns change the initial number of copies. The horizontal coordinate is event count divided by 100, a conventional generation-like time unit. The simulation updates every event; the CSV records every 100 events for display. Histories that reach a boundary remain there. These few histories illustrate possible behaviour; the separate 20,000-repetition experiments estimate probabilities.}
+\label{fig:trajectories}
+\end{figure}
+\clearpage
+
+\textbf{Read the axes before reading a path.} The horizontal axis measures elapsed model events divided by population size. An x-coordinate of ten means 1,000 events here. It does not mean ten discrete nonoverlapping generations. The vertical axis is a fraction, from zero to one. Multiplying it by 100 gives the focal count for this figure.
+
+Do not estimate a rare probability from eight paths. If an outcome has probability \(0.01\), eight independent runs usually contain no such outcome. That would be entirely compatible with the exact probability. The larger experiment is needed for estimating rare outcomes.
+
+\section{Figure 2: do the simulations agree with the exact calculation?}
+Figure~\ref{fig:fixation} places selective advantage on the horizontal axis and eventual fixation probability on the vertical axis. Each panel has a different population size. All start with one copy. A teal line gives exact probabilities. A dot gives the observed proportion of fixations in 20,000 repetitions. A vertical bar gives that estimate's 95\% Wilson interval.
+
+At \(s=0\), the exact answer is \(1/N\). The neutral intercept therefore differs between panels: \(0.05\), \(0.02\), \(0.01\), and \(0.005\). The panels share the same vertical scale so that these differences are visible.
+
+Within a fixed population size, the exact line increases with advantage. The dots need not increase at every adjacent setting. Each dot comes from a separate finite experiment, so sampling noise can obscure a small difference. A local downward movement between two estimated points is not, by itself, evidence that a beneficial allele became less likely to fix.
+
+\begin{figure}[p]
+\centering
+\input{images/fig_fixation}
+\caption{Exact fixation probabilities (teal lines), simulation estimates (dots), and two-sided 95\% Wilson intervals (bars). Each point uses 20,000 completed experiments and one initial copy. Differences from the exact line are expected sampling variation; confidence intervals are not intended to contain the exact answer in every one of many independent experiments.}
+\label{fig:fixation}
+\end{figure}
+\clearpage
+
+\subsection{Read one result all the way through}
+For \(N=100,s=0.01\), the supplied full run produced 332 fixations in 20,000 repetitions. Divide to get the estimated probability:
+\[
+\widehat p=\frac{332}{20000}=0.0166=1.66\%.
+\]
+The exact model probability is approximately \(0.0157087\), or \(1.57087\%\). Its predicted number of fixations in 20,000 repetitions is \(20000\times0.0157087\), approximately 314.17. An expected count need not be a whole number because it is an average across hypothetical repetitions of the entire batch.
+
+The actual count 332 is about 18 above that expected count. The exact binomial standard error of the probability estimate is
+\[
+\sqrt{\frac{0.0157087(1-0.0157087)}{20000}}\approx0.000879.
+\]
+The discrepancy \(0.0166-0.0157087\approx0.000891\) is about one such standard error. That is an ordinary size of sampling difference. The Wilson interval is approximately \([0.01492,0.01847]\); it includes the exact probability in this case.
+
+\begin{workedexample}
+\textbf{Better odds are not the same as likely success.} The neutral probability at \(N=100\) is \(0.01\). Dividing \(0.0157087\) by \(0.01\) gives approximately \(1.57\). Selection increased the fixation chance by a factor of about 1.57. But the loss probability remains \(1-0.0157087\approx0.98429\), or 98.43\%. Both statements describe the same result.
+\end{workedexample}
+
+\subsection{The complete set of settings for one population size}
+Table~\ref{tab:selected} is imported directly from the generated data. Every row here has \(N=100\), one initial copy, and 20,000 repetitions. Probabilities in the table are fractions, not percentages. Multiply by 100 to obtain percentages.
+
+\begin{table}[htbp]
+\centering\small
+\input{generated/selected_table}
+\caption{The supplied full run for \(N=100\). Rounding in the printed table does not affect the calculations, which retain more digits in the CSV.}
+\label{tab:selected}
+\end{table}
+
+\subsection{One interval misses: should we discard that experiment?}
+Across all 28 conditions, \IntervalsCovering{} intervals contain their exact model probabilities. The interval for \(N=50,s=0.005\) misses: the estimate is \(0.0197\), while the exact value is about \(0.022541\). The largest discrepancy anywhere in the grid is \MaximumStandardisedError{} exact binomial standard errors.
+
+This does not mean that we should choose a new seed until all intervals cover. Repeated 95\% intervals are not supposed to cover in every experiment. Selecting a seed because its results look especially close would hide the variation we are trying to understand. We retain the specified seeds and report the miss. The deterministic recurrence check and the event-rule checks independently support the correctness of the calculations.
+
+\section{Do larger populations give a new single copy a better chance?}
+There are two different comparisons. One holds the initial count at one. The other holds the initial \emph{frequency} at 10\%. With \(N=20\), 10\% means two copies. With \(N=200\), it means 20 copies. Changing population size while holding frequency fixed also changes the initial number of copies.
+
+Table~\ref{tab:initial} uses \(s=0.01\) and exact calculations, not additional Monte Carlo estimates. Its final column divides the single-copy probability by its neutral baseline \(1/N\).
+
+\begin{table}[htbp]
+\centering\small
+\input{generated/initial_table}
+\caption{Exact fixation probabilities under two starting rules, at \(s=0.01\). The last column is a dimensionless ratio, not a probability.}
+\label{tab:initial}
+\end{table}
+
+For a single copy, increasing \(N\) decreases the starting frequency. At fixed positive advantage, its exact fixation probability decreases towards \(s/(1+s)\). Meanwhile the neutral baseline falls as \(1/N\), so the \emph{ratio to neutral} can increase. There is no contradiction: an absolute probability and a ratio to a changing baseline answer different questions.
+
+\section{Figure 3: how wrong is a useful approximation?}
+Figure~\ref{fig:approximation} compares the weak-selection expression
+\[
+q=\frac{s}{1-e^{-Ns}}
+\]
+with the exact single-copy probability \(p\). Its vertical quantity is \(100|q-p|/p\), the absolute relative error expressed as a percentage. This is \emph{not} the fixation probability. For example, a 10\% relative error means that the approximation differs by one tenth of the exact probability; it does not necessarily differ by ten percentage points.
+
+The horizontal axis is logarithmic. Equal spacing represents equal ratios rather than equal differences. Moving from \(10^{-5}\) to \(10^{-4}\) multiplies advantage by ten, just as moving from \(10^{-3}\) to \(10^{-2}\) does. Chapter~8 explains the powers and logarithms used here.
+
+\begin{figure}[htbp]
+\centering
+\input{images/fig_approximation}
+\caption{Error in the weak-selection approximation for one initial copy. Lines compare analytical expressions for four population sizes. The advantage range extends to \(0.5\) specifically to examine failure of the small-advantage assumption. These settings are illustrative mathematical inputs, not fitted biological parameters.}
+\label{fig:approximation}
+\end{figure}
+
+At small advantage, the approximation is close. At larger advantage, its error becomes substantial. A large value of \(Ns\) does not by itself license replacing \(\log(1+s)\) with \(s\). Those are different assumptions. We can use the exact formula throughout this project, so approximation error is something to investigate rather than an unavoidable source of uncertainty.
+
+\section{What have we learned, and what have we not learned?}
+We learned that reproductive advantage increases fixation odds at a given population size under these rules, yet loss can remain the overwhelmingly likely outcome for a single copy. We learned how to calculate that probability exactly, estimate it by simulation, quantify sampling uncertainty, and check a simpler approximation.
+
+We did not infer an advantage from measured genetic data. We did not include diploidy, dominance, mutation, migration, population structure, changing population size, or a fluctuating environment. A successful check says that our implementation agrees with the stated model. Applying the model to a particular species would require checking whether its assumptions are suitable and how its parameters relate to observations.
+
+\begin{checkpoint}
+\textbf{Try it.} Why does one exact curve plus a cloud of simulation estimates teach more than a simulation plot alone?\\[3pt]
+\textbf{Answer.} The exact curve gives a benchmark independent of random sampling. It lets us see the scale of Monte Carlo variation and detect systematic implementation errors. A simulation plot alone does not tell us whether its pattern is the correct prediction of the model.
+\end{checkpoint}

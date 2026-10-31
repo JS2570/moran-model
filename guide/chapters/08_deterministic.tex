@@ -1,0 +1,277 @@
+\chapter{What an average-change model can and cannot predict}
+\label{ch:deterministic}
+
+\section{Two useful questions, two different calculations}
+
+The stochastic model asks what can happen when every birth and replacement is random. ``Stochastic'' means that randomness is part of the description. A \emph{deterministic} model instead gives one prescribed path from a given starting point. It has no random draws.
+
+A deterministic path can describe a systematic tendency, such as an advantageous type tending to increase. It cannot display all the individual histories in which that type is lost. We will derive a deterministic approximation from our stochastic rules, rather than introduce an unrelated growth equation.
+
+This chapter also develops a simpler approximation to the fixation probability. Keep the two approximations separate:
+\begin{itemize}
+\item The deterministic approximation concerns a population's changing allele frequency.
+\item The weak-selection approximation concerns the probability of the eventual fixation outcome.
+\end{itemize}
+They answer different questions.
+
+\section{First calculate the expected change in the allele count}
+
+Let $I_j$ be the random number of focal-allele carriers after $j$ reproduction events. The capital letter reminds us that different simulation runs can have different counts. Suppose its present value is $i$.
+
+During one event, the count increases by one with probability $T_i^+$, decreases by one with probability $T_i^-$, or stays unchanged with probability $T_i^0$. Expected change means each possible change multiplied by its probability, then added:
+\begin{align}
+\mathbb E[I_{j+1}-I_j\mid I_j=i]
+&=(+1)T_i^++(-1)T_i^-+0T_i^0\\
+&=T_i^+-T_i^-.
+\label{eq:expected-count-step}
+\end{align}
+The vertical bar means ``given that''. We are calculating the expectation given the current count, not taking an average over all possible current counts.
+
+Write the focal type's relative fitness as $r=1+s$. Substituting the transition probabilities gives
+\begin{align}
+T_i^+-T_i^-
+&=\frac{ri}{ri+N-i}\frac{N-i}{N}
+  -\frac{N-i}{ri+N-i}\frac{i}{N}\\
+&=\frac{ri(N-i)-i(N-i)}{N(ri+N-i)}\\
+&=\frac{(r-1)i(N-i)}{N(ri+N-i)}\\
+&=\frac{s\,i(N-i)}{N(N+si)}.
+\label{eq:count-drift}
+\end{align}
+The last line used $r-1=s$ and $ri+N-i=(1+s)i+N-i=N+si$.
+
+\begin{workedexample}
+Return to $N=5$, $i=2$ and $s=0.5$. We already found $T_i^+=0.3$ and $T_i^-=0.2$. The expected count change is $0.3-0.2=0.1$.
+
+No actual event increases the count by one tenth of an individual. Actual changes are $+1$, $-1$ or $0$. The number 0.1 is their probability-weighted average across many populations that all currently have two carriers.
+\end{workedexample}
+
+\section{Convert a count change into a frequency change}
+
+The allele frequency is the carrier count divided by population size. Define the random frequency $X_j=I_j/N$, and write $x=i/N$ for a particular current frequency. A count change of one changes the frequency by $1/N$.
+
+Divide equation~\eqref{eq:count-drift} by $N$, then substitute $i=Nx$ and $N-i=N(1-x)$:
+\begin{align}
+\mathbb E[X_{j+1}-X_j\mid X_j=x]
+&=\frac{s\,i(N-i)}{N^2(N+si)}\\
+&=\frac{s\,N^2x(1-x)}{N^3(1+sx)}\\
+&=\frac{s\,x(1-x)}{N(1+sx)}.
+\label{eq:frequency-drift}
+\end{align}
+
+In the five-individual example, the frequency is $x=2/5=0.4$. The expected count change 0.1 corresponds to an expected frequency change $0.1/5=0.02$.
+
+\section{Turn that expected change into one deterministic path}
+
+Let $m_j$ be a deterministic approximation to the frequency after event $j$. We allow $m_j$ to be any real number between zero and one. It need not be a multiple of $1/N$, because it describes an approximation, not the literal count of individuals.
+
+Start it at the actual initial frequency, $m_0=i_0/N$, where $i_0$ is the initial carrier count. Then repeatedly add the expected frequency change evaluated at the current deterministic frequency:
+\begin{equation}
+m_{j+1}=m_j+
+\frac{s\,m_j(1-m_j)}{N(1+s m_j)}.
+\label{eq:deterministic-recurrence}
+\end{equation}
+A rule that calculates the next value from the current value is called a \emph{recurrence}. Here the recurrence is nonlinear: it contains products involving $m_j$ and also $m_j$ in a denominator.
+
+\begin{workedexample}
+Take $N=5$, $i_0=2$ and $s=0.5$. The initial value is $m_0=0.4$. The first update is
+\[
+m_1=0.4+\frac{0.5\times0.4\times0.6}{5(1+0.5\times0.4)}
+    =0.4+0.02=0.42.
+\]
+For the second update we use 0.42, not the old value 0.4:
+\[
+m_2=0.42+\frac{0.5\times0.42\times0.58}{5(1+0.5\times0.42)}
+\approx0.440132.
+\]
+These values trace one smooth tendency. An actual population of five individuals cannot have frequency 0.42: its possible frequencies are 0, 0.2, 0.4, 0.6, 0.8 and 1.
+\end{workedexample}
+
+The code needs only a loop for this recurrence: read the previous value, calculate the increment, and store their sum. It contains no random draw. The deterministic and stochastic functions therefore need different explanations even when they appear on the same figure.
+
+\section{Why this is not usually the exact average of the stochastic runs}
+
+It is tempting to call $m_j$ the exact average frequency. That is generally incorrect.
+
+Define the function
+\[
+g(x)=\frac{s\,x(1-x)}{N(1+sx)}.
+\]
+The stochastic model's exact relation is
+\[
+\mathbb E[X_{j+1}]=\mathbb E[X_j]+\mathbb E[g(X_j)].
+\]
+To obtain our deterministic recurrence, we replace the average of $g(X_j)$ with $g$ evaluated at an average-like frequency. In general,
+\[
+\mathbb E[g(X_j)]\ne g(\mathbb E[X_j]).
+\]
+
+Here is a simpler example showing why those operations do not commute. Suppose a number is zero half the time and one half the time. Its average is $1/2$. Its average square is $(0^2+1^2)/2=1/2$. But the square of its average is $(1/2)^2=1/4$. Average first, then square, gives a different result from square first, then average.
+
+Our drift function is also nonlinear. Treating its value at a typical frequency as the average drift is called a \emph{mean-field approximation}. This is a useful approximation, but it needs that label.
+
+There is an instructive special case. Under neutrality, $s=0$, so $g(x)=0$ at every frequency. The exact ensemble-average frequency then remains at its initial value. Individual populations can still drift to zero or one. A flat average does not imply unchanging individual populations.
+
+\section{Time units and the differential equation}
+
+So far, one time step has meant one birth--replacement event. A population with 200 individuals experiences less change in frequency from one such event than a population with five individuals.
+
+For comparison we can define a rescaled time
+\[
+t=\frac{j}{N}.
+\]
+Thus one unit of $t$ contains $N$ events. We may describe this as a generation-like unit, but it is \emph{not} a biological generation with synchronous parents and offspring. Our Moran population has overlapping replacement events. Always inspect the axis label before interpreting a trajectory.
+
+The slope of a curve means change in height divided by change in horizontal position. For frequency over rescaled time, this is
+\[
+\frac{\text{frequency change}}{\text{time change}}.
+\]
+One event changes rescaled time by $1/N$. Dividing the expected frequency increment from equation~\eqref{eq:frequency-drift} by $1/N$ cancels the factor $N$:
+\[
+\frac{s x(1-x)/(N(1+sx))}{1/N}
+=\frac{s x(1-x)}{1+sx}.
+\]
+
+A \emph{derivative}, written $dx/dt$, is the limiting slope over an increasingly small time interval. When a continuous curve is an appropriate approximation to the discrete updates, its equation is
+\begin{equation}
+\frac{dx}{dt}=\frac{s\,x(1-x)}{1+sx}.
+\label{eq:deterministic-ode}
+\end{equation}
+An equation involving a derivative is called a \emph{differential equation}. We do not need a specialised differential-equation solver to generate the deterministic curves in this project: the implemented recurrence already supplies the values at event times. The differential equation explains the continuous-time interpretation of that recurrence.
+
+For $s>0$ and $0<x<1$, every factor in the right-hand side is positive. The deterministic curve therefore rises towards one. At $x=0$ or $x=1$, the factor $x(1-x)$ is zero, so these endpoints do not move. For $s=0$, the entire right-hand side is zero, so the deterministic frequency stays flat.
+
+\begin{checkpoint}
+\textbf{Question.} Does a positive deterministic slope prove that the focal allele fixes in every stochastic run?
+
+\textbf{Worked answer.} No. A positive slope describes a systematic tendency. The stochastic model still permits downward events. A rare advantageous allele can disappear before that tendency produces a large population of carriers. The exact fixation probability answers the eventual-outcome question.
+\end{checkpoint}
+
+\section{An advantageous allele can have better odds and still usually disappear}
+
+For one initial copy, the exact fixation probability is
+\begin{equation}
+p_N(s)=\frac{1-(1+s)^{-1}}{1-(1+s)^{-N}},
+\qquad s>0.
+\label{eq:single-copy-exact}
+\end{equation}
+The subscript $N$ reminds us that population size matters. Under neutrality, $p_N(0)=1/N$.
+
+For $N=100$ and $s=0.01$, the exact selected probability is approximately 0.015709. The neutral probability is 0.01. Selection therefore increases fixation probability by a factor of about
+\[
+\frac{0.015709}{0.01}\approx1.571.
+\]
+That is about a 57\% relative increase. Yet the absolute fixation chance is only about 1.57\%. The corresponding loss chance is about 98.43\%.
+
+Both statements are true. Selection improves the odds appreciably relative to neutrality, while loss remains by far the more common outcome for one rare copy. Keeping absolute probability separate from relative improvement is a central lesson of this study.
+
+\section{Build the weak-selection approximation step by step}
+
+The exact formula is already easy to evaluate. Why approximate it? A simpler expression can reveal which combinations of parameters matter. We must then check the price paid in accuracy.
+
+First simplify the numerator exactly:
+\[
+1-(1+s)^{-1}
+=1-\frac{1}{1+s}
+=\frac{1+s-1}{1+s}
+=\frac{s}{1+s}.
+\]
+When $s$ is small compared with one, the denominator $1+s$ is close to one. Therefore $s/(1+s)\approx s$. The symbol $\approx$ means ``approximately equal'', rather than exactly equal.
+
+Next rewrite the denominator using exponential and logarithmic functions. The function $\log$ is the natural logarithm, which reverses the exponential function $\exp$. The identity $a^b=\exp(b\log a)$ gives
+\[
+(1+s)^{-N}=\exp[-N\log(1+s)].
+\]
+Near zero, $\log(1+s)$ is approximately $s$. The first terms of its expansion are
+\[
+\log(1+s)=s-\frac{s^2}{2}+\frac{s^3}{3}-\cdots.
+\]
+The dots indicate further, higher-power terms. For small $s$, those higher powers are small, which motivates retaining only the first term. This gives
+\[
+(1+s)^{-N}\approx\exp(-Ns).
+\]
+Applying both approximations yields
+\begin{equation}
+q_N(s)=\frac{s}{1-\exp(-Ns)}.
+\label{eq:weak-selection}
+\end{equation}
+Here $q_N(s)$ names our approximate probability. It approximates $p_N(s)$ when selection is weak. Weak selection means small $s$, not necessarily small $Ns$.
+
+Our reference uses a selection variable equal to the difference in log fitnesses. Call that variable $\sigma$. In our convention,
+\[
+\sigma=\log(1+s).
+\]
+Its exact formula can then be written $(1-\exp(-\sigma))/(1-\exp(-N\sigma))$. The two conventions agree after this conversion, but $s$ and $\sigma$ are not exactly the same number~\cite{mccandlish2015}. Likewise, fixation approximations from a different reproduction model must not be transferred by copying a factor such as $2s$ without checking that model's conventions.
+
+\section{Understand the small and large parameter limits}
+
+At $s=0$, equation~\eqref{eq:weak-selection} appears to divide zero by zero. We assign its limiting value $1/N$, consistent with the exact neutral result. To see why, use $\exp(-Ns)\approx1-Ns$ when $Ns$ is small:
+\[
+q_N(s)\approx\frac{s}{1-(1-Ns)}
+=\frac{s}{Ns}=\frac{1}{N}.
+\]
+Close to neutrality, the initial one-copy frequency remains the leading fixation prediction.
+
+If $Ns$ is large and positive, $\exp(-Ns)$ is close to zero. The approximation instead becomes $q_N(s)\approx s$. This conclusion still requires $s$ itself to be small if we want it to be accurate. ``Large $Ns$'' does not cancel the weak-selection assumption.
+
+For the exact formula, keep $s>0$ fixed and increase $N$. Then $(1+s)^{-N}$ tends to zero, so
+\begin{equation}
+p_N(s)\longrightarrow\frac{s}{1+s}.
+\label{eq:large-N-exact}
+\end{equation}
+The arrow means ``approaches as $N$ grows''. The exact limit differs from the approximate limit $s$. When $s$ is tiny, their difference is tiny. When $s=0.5$, the exact limit is $1/3$, while the weak-selection expression approaches $1/2$. That is a substantial error.
+
+\section{Measure approximation error rather than guessing}
+
+Define relative error as
+\begin{equation}
+\text{relative error}=\frac{|q_N(s)-p_N(s)|}{p_N(s)}.
+\label{eq:relative-error}
+\end{equation}
+The absolute-value bars remove the sign of the difference. Dividing by the exact probability expresses the discrepancy as a fraction of that probability. Multiplying by 100 gives a percentage.
+
+For $N=100$ and $s=0.01$, the exact probability is approximately 0.0157087 and the approximation is approximately 0.0158198. Their relative error is approximately 0.00707, or 0.707\%.
+
+For $N=100$ and $s=0.5$, the exact probability is essentially $1/3$ and the approximation is essentially $1/2$. The relative error is about 50\%. This larger coefficient is included in an analytical error grid to expose the approximation's limitations. It is not a measured biological fitness estimate, and it is not part of the main simulation grid.
+
+The error curves use direct mathematical evaluations, so they do not contain Monte Carlo sampling error. This separates an approximation's mathematical error from the simulation's finite-sample uncertainty.
+
+\section{What the product \texorpdfstring{$Ns$}{Ns} does and does not mean}
+
+The weak-selection expression contains the product $Ns$. Divide its approximate fixation probability by the neutral probability $1/N$:
+\[
+\frac{q_N(s)}{1/N}=Nq_N(s)=\frac{Ns}{1-\exp(-Ns)}.
+\]
+This relative advantage depends only on $Ns$. It explains why the product is a useful guide to the balance between selection and drift in this setting. It does not make $Ns$ an exact universal description of all population-genetic models.
+
+Even within our model, the exact relative probabilities are only approximately collapsed by $Ns$. For example, the parameter pairs $(N,s)=(20,0.05)$, $(100,0.01)$ and $(200,0.005)$ all give $Ns=1$. Their exact values of $Np_N(s)$ are approximately 1.5284, 1.5709 and 1.5764. They move closer to the weak-selection prediction as $s$ becomes smaller.
+
+\section{One initial copy is not the same as one initial frequency}
+
+Changing $N$ while keeping one initial copy changes the initial frequency. One copy means frequency $1/20=0.05$ in a population of 20, but $1/200=0.005$ in a population of 200. The second allele starts ten times rarer as a fraction of its population.
+
+At fixed $s>0$, the one-copy exact probability actually decreases towards $s/(1+s)$ as $N$ increases: the numerator stays fixed while the denominator increases towards one. For example, with $s=0.1$, the exact probabilities at $N=100$ and $N=200$ are about 0.0909157 and 0.0909091. Larger $N$ does not automatically improve the absolute fixation chance of one initial copy.
+
+Now hold the initial frequency at 10\% instead. We then start with $i_0=N/10$ copies: two copies for $N=20$, five for $N=50$, ten for $N=100$ and twenty for $N=200$. All four populations begin with the same fraction of carriers. Under neutrality, all four have fixation probability 0.1. Their initial counts differ, but their initial frequencies do not.
+
+Our supplementary analytical comparison makes this distinction visible. It uses the general exact formula with the appropriate $i_0$, rather than pretending that a one-copy comparison controls initial frequency. For instance, at $N=100$ and $s=0.01$, ten initial copies give a fixation probability of about 0.15027, whereas one initial copy gives about 0.01571.
+
+\begin{checkpoint}
+\textbf{Question 1.} Set $s=0$ in the deterministic recurrence. What happens? Does the stochastic population do the same thing?
+
+\textbf{Answer.} The deterministic increment becomes zero, so its frequency stays at $i_0/N$. The stochastic population still experiences upward, downward and unchanged events. It can eventually lose or fix the allele, even though its expected frequency remains unchanged.
+
+\medskip
+\textbf{Question 2.} A calculated exact probability is 0.02 and an approximation gives 0.021. What is the relative error?
+
+\textbf{Answer.} The absolute difference is $|0.021-0.02|=0.001$. Divide by the exact value: $0.001/0.02=0.05$, or 5\%.
+
+\medskip
+\textbf{Question 3.} In a population of 200, how many copies correspond to an initial frequency of 10\%?
+
+\textbf{Answer.} Convert 10\% to 0.1, then multiply by the population size: $0.1\times200=20$ copies. Starting with one copy would instead mean $1/200=0.005$, or 0.5\%.
+
+\medskip
+\textbf{Question 4.} If a weak-selection approximation is inaccurate at $s=0.5$, should we change the simulation to make it agree with that approximation?
+
+\textbf{Answer.} No. Check the simulation against the exact model solution. An approximation can fail because its assumptions are unsuitable. That failure is a result to explain, not a reason to alter correct simulation rules.
+\end{checkpoint}
