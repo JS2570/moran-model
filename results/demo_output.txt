@@ -1,0 +1,16 @@
+ONE EVENT: N=5, i=2, s=0.5
+up = 0.300, down = 0.200, stay = 0.500
+
+A HAND TRACE (specified draws, not a random sample)
+event 1: draw 0.12 -> i = 3
+event 2: draw 0.72 -> i = 3
+event 3: draw 0.41 -> i = 2
+event 4: draw 0.95 -> i = 2
+event 5: draw 0.10 -> i = 3
+event 6: draw 0.03 -> i = 4
+
+A SEEDED EXPERIMENT: N=100, i0=1, s=0.01
+fixations: 33 / 2000
+estimate: 0.016500
+95% Wilson interval: [0.011773, 0.023081]
+exact probability: 0.015709

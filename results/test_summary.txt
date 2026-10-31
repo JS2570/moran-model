@@ -1,0 +1,8 @@
+Test Summary:                    | Pass  Total  Time
+Valid parameters and event rules |  464    464  0.3s
+Test Summary:                                  | Pass  Total  Time
+Exact probabilities and independent recurrence | 1445   1445  0.2s
+Test Summary:                                 | Pass  Total  Time
+Histories, boundaries and deterministic drift |   11     11  0.9s
+Test Summary:                                     | Pass  Total  Time
+Confidence intervals and Monte Carlo sanity check |    5      5  0.1s
