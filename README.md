@@ -2,6 +2,28 @@
 
 A reproducible Julia investigation of when an advantageous allele can still be lost in a finite population. This project studies an established model; it does not claim a new biological discovery.
 
+## Visual results
+
+### Random reproduction gives different outcomes
+
+![Eight stochastic allele-frequency histories per condition, compared with a deterministic approximation](figures/allele-trajectories.png)
+
+Every blue line is one of the eight saved runs, starting with 10 copies in a population of 100. Reaching 0% means loss; reaching 100% means fixation. Even with a reproductive advantage, some runs lose the allele. The dashed curve is a mean-field comparison, not the exact average of stochastic runs.
+
+### Advantage does not guarantee survival
+
+![Exact probabilities of fixation and loss for a single initial allele copy at three selective advantages](figures/fixation-and-loss.png)
+
+Starting from one copy in 100 individuals, a 10% reproductive advantage gives only about a 9.09% chance of eventual fixation. These bars use the exact mathematical formula, so they have no Monte Carlo sampling error. This is a different starting condition from the trajectory figure above.
+
+### Check the simulation against the mathematics
+
+![Simulated fixation probabilities and 95% Wilson intervals against exact curves for four population sizes](figures/simulation-vs-exact.png)
+
+Each point represents 20,000 completed simulations. The curves are exact model predictions; the error bars are 95% Wilson confidence intervals. All 28 conditions are shown, including the one whose interval misses the exact value. Both axes use the same scales across panels.
+
+Figures are drawn from [`results/full/`](results/full/) by [`scripts/plot_results.py`](scripts/plot_results.py). The full teaching guide is not included in this repository.
+
 ## Model
 
 The population contains `N` haploid individuals of two genetic types. The advantageous type has relative reproductive fitness `1+s`; the other has fitness `1`. Each event selects a parent proportional to fitness and independently selects an individual for replacement. Population size stays fixed, with no further mutation.
@@ -61,3 +83,14 @@ Across all 28 conditions, 27 nominal 95% intervals contain the exact probability
 The model assumes a well-mixed population, constant selection, fixed population size and no mutation after initialization. It excludes spatial structure, changing environments and real genetic data.
 
 See [McCandlish, Epstein and Plotkin (2015)](https://arxiv.org/abs/1312.1673). Their log-fitness convention differs from the relative-fitness advantage used here: log-fitness is `log(1+s)`.
+
+## Regenerate the figures
+
+Python is needed only to redraw the PNG figures; the model and simulations run in Julia.
+
+```sh
+python3 -m pip install -r requirements-figures.txt
+python3 scripts/plot_results.py
+```
+
+The plotting script reads the saved full-study CSV files, shows all supplied trajectories and parameter conditions, and writes the three images to `figures/`. It does not rerun or alter the Julia simulations.
