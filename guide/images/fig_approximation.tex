@@ -1,8 +1,0 @@
-\begin{tikzpicture}
-\begin{semilogxaxis}[width=0.92\textwidth,height=0.34\textheight,xmin=0.00001,xmax=0.5,ymin=0,ymax=55,xlabel={Selective advantage $s$ (logarithmic scale)},ylabel={Absolute relative error (\%)},grid=major,grid style={black!7},legend style={at={(0.03,0.97)},anchor=north west,font=\small,draw=none},tick label style={font=\small}]
-\addplot[ink,very thick] table[x=s,y expr=100*\thisrow{relative_error},col sep=comma]{generated/approximation_N20.csv};\addlegendentry{$N=20$}
-\addplot[accent,thick,dashed] table[x=s,y expr=100*\thisrow{relative_error},col sep=comma]{generated/approximation_N50.csv};\addlegendentry{$N=50$}
-\addplot[warm,thick,dashdotted] table[x=s,y expr=100*\thisrow{relative_error},col sep=comma]{generated/approximation_N100.csv};\addlegendentry{$N=100$}
-\addplot[black!55,thick,dotted] table[x=s,y expr=100*\thisrow{relative_error},col sep=comma]{generated/approximation_N200.csv};\addlegendentry{$N=200$}
-\end{semilogxaxis}
-\end{tikzpicture}
