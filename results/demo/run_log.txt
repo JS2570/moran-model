@@ -1,0 +1,29 @@
+cell  1/28: N= 20 s=0.000 estimate=0.047000 exact=0.050000
+cell  2/28: N= 20 s=0.001 estimate=0.050000 exact=0.050476
+cell  3/28: N= 20 s=0.005 estimate=0.054000 exact=0.052404
+cell  4/28: N= 20 s=0.010 estimate=0.050000 exact=0.054867
+cell  5/28: N= 20 s=0.020 estimate=0.062000 exact=0.059958
+cell  6/28: N= 20 s=0.050 estimate=0.075000 exact=0.076422
+cell  7/28: N= 20 s=0.100 estimate=0.087000 exact=0.106781
+cell  8/28: N= 50 s=0.000 estimate=0.026000 exact=0.020000
+cell  9/28: N= 50 s=0.001 estimate=0.029000 exact=0.020494
+cell 10/28: N= 50 s=0.005 estimate=0.019000 exact=0.022541
+cell 11/28: N= 50 s=0.010 estimate=0.025000 exact=0.025260
+cell 12/28: N= 50 s=0.020 estimate=0.036000 exact=0.031199
+cell 13/28: N= 50 s=0.050 estimate=0.046000 exact=0.052168
+cell 14/28: N= 50 s=0.100 estimate=0.091000 exact=0.091690
+cell 15/28: N=100 s=0.000 estimate=0.010000 exact=0.010000
+cell 16/28: N=100 s=0.001 estimate=0.012000 exact=0.010503
+cell 17/28: N=100 s=0.005 estimate=0.014000 exact=0.012669
+cell 18/28: N=100 s=0.010 estimate=0.012000 exact=0.015709
+cell 19/28: N=100 s=0.020 estimate=0.020000 exact=0.022748
+cell 20/28: N=100 s=0.050 estimate=0.039000 exact=0.047984
+cell 21/28: N=100 s=0.100 estimate=0.094000 exact=0.090916
+cell 22/28: N=200 s=0.000 estimate=0.007000 exact=0.005000
+cell 23/28: N=200 s=0.001 estimate=0.004000 exact=0.005514
+cell 24/28: N=200 s=0.005 estimate=0.008000 exact=0.007882
+cell 25/28: N=200 s=0.010 estimate=0.014000 exact=0.011469
+cell 26/28: N=200 s=0.020 estimate=0.024000 exact=0.019989
+cell 27/28: N=200 s=0.050 estimate=0.048000 exact=0.047622
+cell 28/28: N=200 s=0.100 estimate=0.086000 exact=0.090909
+Finished in 1.07 seconds. Data: /Users/joshu/Documents/Codex/2026-10-27/new-chat/outputs/moran_project/results/demo
