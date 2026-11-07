@@ -84,13 +84,4 @@ The model assumes a well-mixed population, constant selection, fixed population 
 
 See [McCandlish, Epstein and Plotkin (2015)](https://arxiv.org/abs/1312.1673). Their log-fitness convention differs from the relative-fitness advantage used here: log-fitness is `log(1+s)`.
 
-## Regenerate the figures
 
-Python is needed only to redraw the PNG figures; the model and simulations run in Julia.
-
-```sh
-python3 -m pip install -r requirements-figures.txt
-python3 scripts/plot_results.py
-```
-
-The plotting script reads the saved full-study CSV files, shows all supplied trajectories and parameter conditions, and writes the three images to `figures/`. It does not rerun or alter the Julia simulations.
